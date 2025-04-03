@@ -1,10 +1,14 @@
 package com.NguyenVanPhuong.shopApp.controller;
 
 //import com.NguyenVanPhuong.shopApp.dto.Request.ApiResponse;
+import com.NguyenVanPhuong.shopApp.dto.Request.ApiResponse;
 import com.NguyenVanPhuong.shopApp.dto.Request.CategoryCreateRequest;
 import com.NguyenVanPhuong.shopApp.dto.Request.CategoryUpdateRequest;
 //import com.NguyenVanPhuong.shopApp.dto.Response.CategoryResponse;
 //import com.NguyenVanPhuong.shopApp.service.CategoryService;
+import com.NguyenVanPhuong.shopApp.entity.Category;
+import com.NguyenVanPhuong.shopApp.repository.CategoryRepository;
+import com.NguyenVanPhuong.shopApp.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -13,13 +17,16 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.annotation.Validated;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @RestController
 public class CategoryController {
-
+    @Autowired
+    CategoryService categoryService;
+    @Autowired
+    CategoryRepository categoryRepository;
 //    @Autowired
 //    CategoryService categoryService;
 
@@ -46,37 +53,65 @@ public class CategoryController {
 //        categoryService.deleteCategory(id);
 //        return ApiResponse.<Void>builder().build();
 //    }
-
-    @GetMapping("/categories")
-    public ResponseEntity<String> getAllCategories(
-            @RequestParam("page") int page,
-            @RequestParam("limit") int limit
-    ){
-        return ResponseEntity.ok("getAllCategories");
-    }
-
     @PostMapping("/categories")
-    public ResponseEntity<?> createCate(
+    public ApiResponse<?> createCategory(
             @RequestBody @Valid CategoryCreateRequest request,
             BindingResult result
     ){
 
-        if(result.hasErrors()){
-           List<String> errorMessages = result.getFieldErrors()
-                   .stream()
-                   .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                   .toList();
-           return ResponseEntity.badRequest().body(errorMessages);
+        if(result.hasErrors()) {
+            List<String> errorMessages = result.getFieldErrors()
+                    .stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .toList();
+            return ApiResponse.builder()
+                    .success(false)
+                    .message("Tạo danh mục thất bại")
+                    .result(errorMessages)
+                    .build();
         }
-        return ResponseEntity.ok("create a category: " + request);
+        return ApiResponse.builder()
+                .success(true)
+                .message("tạo danh mục mới thành công")
+                .result(categoryService.createCategory(request))
+                .build();
     }
+
+    @GetMapping("/categories")
+    public ApiResponse<List<Category>> getAllCategories(
+            @RequestParam("page") int page,
+            @RequestParam("limit") int limit
+    ){
+        List<Category> categories = categoryService.getAllCategories();
+        return ApiResponse.<List<Category>>builder()
+                .success(true)
+                .result(categories)
+                .build();
+    }
+
     @GetMapping("/categories/{id}")
-    public ResponseEntity<String> getById(@PathVariable int id){
-        return ResponseEntity.ok("product id :" +id);
+    public ApiResponse<Category> getById(@PathVariable long id){
+        Category category = categoryService.getCategoryById(id);
+        return ApiResponse.<Category>builder()
+                .success(true)
+                .result(category)
+                .build();
     }
 
     @DeleteMapping("/categories/{id}")
-    public ResponseEntity<String> delete(@PathVariable int id){
+    public ResponseEntity<String> delete(@PathVariable long id){
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("Không tìm thấy danh mục tương úng"));
+        categoryService.deleteCategory(id);
         return ResponseEntity.status(HttpStatus.OK).body("Category deleted successfully");
+    }
+
+    @PutMapping("/categories/{id}")
+    public ApiResponse<Category> updateCategory(@PathVariable long id, @RequestBody CategoryUpdateRequest request){
+        Category category = categoryService.updateCategory(id, request);
+        return ApiResponse.<Category>builder()
+                .success(true)
+                .result(category)
+                .build();
     }
 }

@@ -1,8 +1,12 @@
 package com.NguyenVanPhuong.shopApp.controller;
 
+import com.NguyenVanPhuong.shopApp.dto.Request.ApiResponse;
 import com.NguyenVanPhuong.shopApp.dto.Request.UserCreateRequest;
 import com.NguyenVanPhuong.shopApp.dto.Request.UserLoginRequest;
+import com.NguyenVanPhuong.shopApp.entity.User;
+import com.NguyenVanPhuong.shopApp.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -16,9 +20,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 public class UserController {
+    @Autowired
+    UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> createUser(
+    public ApiResponse<?> createUser(
             @Valid @RequestBody UserCreateRequest request,
             BindingResult result
     ){
@@ -28,16 +34,31 @@ public class UserController {
                         .stream()
                         .map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .toList();
-                return ResponseEntity.badRequest().body(errorMessage);
+                return ApiResponse.builder()
+                        .success(false)
+                        .message("Tạo người dùng thất bại")
+                        .result(errorMessage)
+                        .build();
             }
-            return ResponseEntity.ok("Register successfully");
+            return ApiResponse.builder()
+                    .success(true)
+                    .result(userService.createUser(request))
+                    .build();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ApiResponse.builder()
+                    .success(false)
+                    .result(e.getMessage())
+                    .build();
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody UserLoginRequest request){
-        return ResponseEntity.ok("Token here");
+    public ApiResponse<String> login(@Valid @RequestBody UserLoginRequest request){
+        String token = userService.login(request);
+        return ApiResponse.<String>builder()
+                .success(true)
+                .message("Lấy token thành công")
+                .result(token)
+                .build();
     }
 }

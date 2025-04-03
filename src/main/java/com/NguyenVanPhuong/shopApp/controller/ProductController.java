@@ -1,8 +1,13 @@
 package com.NguyenVanPhuong.shopApp.controller;
 
+import com.NguyenVanPhuong.shopApp.dto.Request.ApiResponse;
 import com.NguyenVanPhuong.shopApp.dto.Request.ProductCreateRequest;
-//import com.NguyenVanPhuong.shopApp.service.CategoryService;
+import com.NguyenVanPhuong.shopApp.dto.Request.ProductImageCreateRequest;
+import com.NguyenVanPhuong.shopApp.entity.Product;
+import com.NguyenVanPhuong.shopApp.entity.ProductImage;
+import com.NguyenVanPhuong.shopApp.service.ProductService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,44 +29,24 @@ import java.util.UUID;
 @RestController
 public class ProductController {
 
-//    @Autowired
-//    CategoryService categoryService;
+    @Autowired
+    ProductService productService;
 
-//    @PostMapping("/categories")
-//    public ApiResponse<CategoryResponse> create(@RequestBody @Valid CategoryCreateRequest request){
-//        return ApiResponse.<CategoryResponse>builder()
-//                .result(categoryService.createCategory(request))
+//    @GetMapping("/products")
+//    public ApiResponse<Product> getAllCategories(
+//            @RequestParam("page") int page,
+//            @RequestParam("limit") int limit
+//    ){
+//        return ApiResponse.<Product>builder()
+//                .success(true)
+//                .result(productService.getAllProduct())
 //                .build();
 //    }
-//    @GetMapping("/categories")
-//    public ApiResponse<List<CategoryResponse>> getAll(){
-//        return ApiResponse.<List<CategoryResponse>>builder()
-//                .result(categoryService.getAll())
-//                .build();
-//    }
-//    @PutMapping("/categories/{id}")
-//    public ApiResponse<CategoryResponse> update(@PathVariable int id, @RequestBody CategoryUpdateRequest request){
-//        return  ApiResponse.<CategoryResponse>builder()
-//                .result(categoryService.updateCategory(id, request))
-//                .build();
-//    }
-//    @DeleteMapping("/categories/{id}")
-//    public ApiResponse<Void> delete(@PathVariable int id){
-//        categoryService.deleteCategory(id);
-//        return ApiResponse.<Void>builder().build();
-//    }
 
-    @GetMapping("/products")
-    public ResponseEntity<String> getAllCategories(
-            @RequestParam("page") int page,
-            @RequestParam("limit") int limit
-    ){
-        return ResponseEntity.ok("getAllProducts");
-    }
-
-    @PostMapping(value = "/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createCate(
-            @ModelAttribute @Valid ProductCreateRequest request,
+    @PostMapping(value = "/products")
+    public ApiResponse<?> createProduct(
+            @RequestBody @Valid ProductCreateRequest request,
+            //@ModelAttribute("files") List<MultipartFile> files,
             //@RequestPart("file") MultipartFile file,
             BindingResult result
     ){
@@ -72,29 +57,56 @@ public class ProductController {
                         .stream()
                         .map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .toList();
-                return ResponseEntity.badRequest().body(errorMessages);
+                return ApiResponse.builder()
+                        .success(false)
+                        .message("Gặp lỗi trong quá trình tạo sản phẩm")
+                        .result(errorMessages)
+                        .build();
             }
-            List<MultipartFile> files = request.getFiles();
-            //kiểm tra kích thước của ảnh
-            files = files == null ? new ArrayList<MultipartFile>() : files;
-            for(var file : files){
+            Product product = productService.createProduct(request);
 
-                if(file != null){
-                    if(file.getSize() > 10 *1024 *1024){
-                        throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "File updated is too large");
-                    }
-                    //Kiểm tra xe file upload nên có phải ảnh hay không
-                    String contentType = file.getContentType();
-                    if(contentType == null || !contentType.startsWith("image/")){
-                        throw  new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "File must be a image");
-                    }
-                    String fileName = storeFile(file);
-                }
-            }
-            return ResponseEntity.ok("created a product successfully ");
+            return ApiResponse.builder()
+                    .success(true)
+                    .result(productService.createProduct(request))
+                    .build();
         }catch (Exception ex){
-            return ResponseEntity.badRequest().body(ex.getMessage());
+            return ApiResponse.builder()
+                    .success(false)
+                    .result(ex.getMessage())
+                    .build();
         }
+    }
+    @PostMapping(value = "/products/uploads/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<?> uploadImages(
+            @ModelAttribute("files") List<MultipartFile> files,
+            @PathVariable("id") long productId
+    ) throws Exception {
+        Product product = productService.getProductById(productId);
+        //kiểm tra kích thước của ảnh
+        files = files == null ? new ArrayList<MultipartFile>() : files;
+        List<ProductImage> productImages = new ArrayList<>();
+        for(var file : files){
+
+            if(file != null){
+                if(file.getSize() > 10 *1024 *1024){
+                    throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "File updated is too large");
+                }
+                //Kiểm tra xe file upload nên có phải ảnh hay không
+                String contentType = file.getContentType();
+                if(contentType == null || !contentType.startsWith("image/")){
+                    throw  new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "File must be a image");
+                }
+                //lưu ảnh vào trong
+                String fileName = storeFile(file);
+                ProductImage productImage = productService.createProductImage(product.getId(), ProductImageCreateRequest.builder()
+                        .imageUrl(fileName)
+                        .build());
+                productImages.add(productImage);
+            }
+        }
+        return ApiResponse.builder()
+                .result(productImages)
+                .build();
     }
     private String storeFile(MultipartFile file)throws IOException {
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());//lấy tên file

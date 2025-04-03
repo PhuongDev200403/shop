@@ -22,6 +22,4 @@ public class ProductCreateRequest {
     String url;
     String description;
     int category_id;
-    List<MultipartFile> files;
-
 }
