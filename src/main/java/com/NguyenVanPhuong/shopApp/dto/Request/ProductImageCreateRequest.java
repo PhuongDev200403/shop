@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -18,6 +19,7 @@ import lombok.experimental.FieldDefaults;
 public class ProductImageCreateRequest {
     @JsonProperty("product_id")
     @Min(value = 1, message = "id phải lớn hơn hoặc bàng 1")
+    @NotNull(message = "product id không thể để trống")
     Long product_id;
     @Size(min = 5, max = 250, message = "file ảnh không hợp lệ")
     @JsonProperty("image_url")

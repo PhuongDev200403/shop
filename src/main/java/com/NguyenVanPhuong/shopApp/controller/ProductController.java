@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/products")
 public class ProductController {
 
     @Autowired
@@ -43,7 +44,7 @@ public class ProductController {
 //                .build();
 //    }
 
-    @PostMapping(value = "/products")
+    @PostMapping()
     public ApiResponse<?> createProduct(
             @RequestBody @Valid ProductCreateRequest request,
             //@ModelAttribute("files") List<MultipartFile> files,
@@ -76,7 +77,7 @@ public class ProductController {
                     .build();
         }
     }
-    @PostMapping(value = "/products/uploads/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/uploads/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<?> uploadImages(
             @ModelAttribute("files") List<MultipartFile> files,
             @PathVariable("id") long productId
@@ -105,6 +106,7 @@ public class ProductController {
             }
         }
         return ApiResponse.builder()
+                .success(true)
                 .result(productImages)
                 .build();
     }
@@ -122,12 +124,12 @@ public class ProductController {
         Files.copy(file.getInputStream(),destination, StandardCopyOption.REPLACE_EXISTING);
         return newFileName;
     }
-    @GetMapping("/products/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<String> getById(@PathVariable int id){
         return ResponseEntity.ok("product id :" +id);
     }
 
-    @DeleteMapping("/products/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable int id){
         return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfully");
     }

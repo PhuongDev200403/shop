@@ -82,7 +82,7 @@ public class ProductService {
 
     public ProductImage createProductImage(long productId, ProductImageCreateRequest request) throws Exception {
         Product product = productReposiory
-                .findById((long)(request.getProduct_id()))
+                .findById(productId)
                 .orElseThrow(() ->
                         new DataIntegrityViolationException(
                                 "Không tìm thấy sản phẩm"));
