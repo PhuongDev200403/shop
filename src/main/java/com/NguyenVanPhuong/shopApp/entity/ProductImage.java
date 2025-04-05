@@ -11,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductImage {
+    public static  final int MAXIMUM_IMAGES_PER_PRODUCT = 5;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;

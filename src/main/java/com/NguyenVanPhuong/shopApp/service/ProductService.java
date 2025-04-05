@@ -2,9 +2,13 @@ package com.NguyenVanPhuong.shopApp.service;
 
 import com.NguyenVanPhuong.shopApp.dto.Request.ProductCreateRequest;
 import com.NguyenVanPhuong.shopApp.dto.Request.ProductImageCreateRequest;
+import com.NguyenVanPhuong.shopApp.dto.Response.ProductResponse;
 import com.NguyenVanPhuong.shopApp.entity.Category;
 import com.NguyenVanPhuong.shopApp.entity.Product;
 import com.NguyenVanPhuong.shopApp.entity.ProductImage;
+import com.NguyenVanPhuong.shopApp.exception.AppException;
+import com.NguyenVanPhuong.shopApp.exception.ErrorCode;
+import com.NguyenVanPhuong.shopApp.mapper.ProductMapper;
 import com.NguyenVanPhuong.shopApp.repository.CategoryRepository;
 import com.NguyenVanPhuong.shopApp.repository.ProductImageRepository;
 import com.NguyenVanPhuong.shopApp.repository.ProductReposiory;
@@ -26,6 +30,9 @@ public class ProductService {
 
     @Autowired
     ProductImageRepository productImageRepository;
+
+    @Autowired
+    ProductMapper productMapper;
     //Tạo sản phẩm mới
     public Product createProduct(ProductCreateRequest request){
         Category category = categoryRepository
@@ -47,29 +54,34 @@ public class ProductService {
     //Lấy sản phẩm theo id
     public Product getProductById(long id){
         return productReposiory.findById(id)
-                .orElseThrow(() -> new DataIntegrityViolationException("Không tìm thấy sản phẩm"));
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
     }
     //Lấy tất cả danh sách sản phẩm
-    public Page<Product> getAllProduct(PageRequest pageRequest){
-        return productReposiory.findAll(pageRequest);
+    public Page<ProductResponse> getAllProduct(PageRequest pageRequest){
+        return productReposiory.findAll(pageRequest).map(product -> {
+            ProductResponse productRespone = ProductResponse.builder()
+                    .id(product.getId())
+                    .name(product.getName())
+                    .price(product.getPrice())
+                    .url(product.getUrl())
+                    .description(product.getDescription())
+                    .category_id(product.getCategory().getId())
+                    .build();
+            productRespone.setCreateAt(product.getCreateAt());
+            productRespone.setUpdateAt(product.getUpdateAt());
+            return productRespone;
+        });
     }
     //Cập nhật sản phẩm
-    public Product updateProduct(long id, ProductCreateRequest request) throws Exception{
+    public ProductResponse updateProduct(long id, ProductCreateRequest request) throws Exception{
         Product product = getProductById(id);
         Category category = categoryRepository
                 .findById((long)(request.getCategory_id()))
                 .orElseThrow(() ->
-                        new DataIntegrityViolationException(
-                                "Không tìm thấy danh mục chứa sản phẩm"));
+                        new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
 
-        product = Product.builder()
-                .name(request.getName())
-                .price(request.getPrice())
-                .description(request.getDescription())
-                .url(request.getUrl())
-                .category(category)
-                .build();
-        return productReposiory.save(product);
+        product = productMapper.toProduct(request);
+        return productMapper.toProductResponse(product);
     }
 
     //Xóa sản phẩm
@@ -84,15 +96,14 @@ public class ProductService {
         Product product = productReposiory
                 .findById(productId)
                 .orElseThrow(() ->
-                        new DataIntegrityViolationException(
-                                "Không tìm thấy sản phẩm"));
+                        new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
         ProductImage productImage = ProductImage.builder()
                 .product(product)
                 .imageUrl(request.getImageUrl())
                 .build();
         //không cho truyền quá 5 ảnh vào một sản phẩm
         int size = productImageRepository.findByProductId(productId).size();
-        if(size >= 5){
+        if(size >= ProductImage.MAXIMUM_IMAGES_PER_PRODUCT){
             throw new Exception("Không thể thêm quá 5 ảnh");
         }
         return productImageRepository.save(productImage);

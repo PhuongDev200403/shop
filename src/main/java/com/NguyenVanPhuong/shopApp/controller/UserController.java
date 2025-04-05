@@ -35,18 +35,18 @@ public class UserController {
                         .map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .toList();
                 return ApiResponse.builder()
-                        .success(false)
+                        //.success(false)
                         .message("Tạo người dùng thất bại")
                         .result(errorMessage)
                         .build();
             }
             return ApiResponse.builder()
-                    .success(true)
+                    //.success(true)
                     .result(userService.createUser(request))
                     .build();
         } catch (Exception e) {
             return ApiResponse.builder()
-                    .success(false)
+//                    .success(false)
                     .result(e.getMessage())
                     .build();
         }
@@ -56,7 +56,7 @@ public class UserController {
     public ApiResponse<String> login(@Valid @RequestBody UserLoginRequest request){
         String token = userService.login(request);
         return ApiResponse.<String>builder()
-                .success(true)
+                //.success(true)
                 .message("Lấy token thành công")
                 .result(token)
                 .build();

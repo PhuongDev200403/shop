@@ -27,32 +27,7 @@ public class CategoryController {
     CategoryService categoryService;
     @Autowired
     CategoryRepository categoryRepository;
-//    @Autowired
-//    CategoryService categoryService;
 
-//    @PostMapping("/categories")
-//    public ApiResponse<CategoryResponse> create(@RequestBody @Valid CategoryCreateRequest request){
-//        return ApiResponse.<CategoryResponse>builder()
-//                .result(categoryService.createCategory(request))
-//                .build();
-//    }
-//    @GetMapping("/categories")
-//    public ApiResponse<List<CategoryResponse>> getAll(){
-//        return ApiResponse.<List<CategoryResponse>>builder()
-//                .result(categoryService.getAll())
-//                .build();
-//    }
-//    @PutMapping("/categories/{id}")
-//    public ApiResponse<CategoryResponse> update(@PathVariable int id, @RequestBody CategoryUpdateRequest request){
-//        return  ApiResponse.<CategoryResponse>builder()
-//                .result(categoryService.updateCategory(id, request))
-//                .build();
-//    }
-//    @DeleteMapping("/categories/{id}")
-//    public ApiResponse<Void> delete(@PathVariable int id){
-//        categoryService.deleteCategory(id);
-//        return ApiResponse.<Void>builder().build();
-//    }
     @PostMapping("/categories")
     public ApiResponse<?> createCategory(
             @RequestBody @Valid CategoryCreateRequest request,
@@ -65,13 +40,11 @@ public class CategoryController {
                     .map(DefaultMessageSourceResolvable::getDefaultMessage)
                     .toList();
             return ApiResponse.builder()
-                    .success(false)
                     .message("Tạo danh mục thất bại")
                     .result(errorMessages)
                     .build();
         }
         return ApiResponse.builder()
-                .success(true)
                 .message("tạo danh mục mới thành công")
                 .result(categoryService.createCategory(request))
                 .build();
@@ -84,7 +57,7 @@ public class CategoryController {
     ){
         List<Category> categories = categoryService.getAllCategories();
         return ApiResponse.<List<Category>>builder()
-                .success(true)
+
                 .result(categories)
                 .build();
     }
@@ -93,7 +66,7 @@ public class CategoryController {
     public ApiResponse<Category> getById(@PathVariable long id){
         Category category = categoryService.getCategoryById(id);
         return ApiResponse.<Category>builder()
-                .success(true)
+
                 .result(category)
                 .build();
     }
@@ -110,7 +83,7 @@ public class CategoryController {
     public ApiResponse<Category> updateCategory(@PathVariable long id, @RequestBody CategoryUpdateRequest request){
         Category category = categoryService.updateCategory(id, request);
         return ApiResponse.<Category>builder()
-                .success(true)
+
                 .result(category)
                 .build();
     }
