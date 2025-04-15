@@ -12,22 +12,11 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderCreateRequest {
-    @JsonProperty("user_id")
-    @Min(value = 1, message = "INVALID_ID")
-    Long userId;
-//    @NotBlank(message = "FULLNAME_NOT_EMPTY")
-//    @JsonProperty("fullname")
-//    String fullName;
+public class OrderUpdateRequest {
     @JsonProperty("email")
     String email;
-//    @NotBlank(message = "")
-//    @Size(min = 10, max = 10, message = "PHONE_NUMBER_INVALID")
-//    @JsonProperty("phone_number")
-//    String phoneNumber;
-//    @NotBlank(message = "ADDRESS_NOT_EMPTY")
-//    @JsonProperty("address")
-//    String address;
+    @JsonProperty("phone_number")
+    String phoneNumber;
     @JsonProperty("note")
     String note;
     @Min(value = 1, message = "Total money must be greater than 1")
@@ -39,6 +28,4 @@ public class OrderCreateRequest {
     String shippingAddress;
     @JsonProperty("payment_method")
     String paymentMethod;
-    @JsonProperty("shipping_date")
-    LocalDate shippingDate;
 }

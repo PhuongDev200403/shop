@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -63,45 +64,21 @@ public class ProductController {
                 .totalPage(totalPages)
                 .build();
         return ApiResponse.<ProductListResponse>builder()
-                //.success(true)
                 .result(productListResponse)
                 .build();
     }
 
     @PostMapping()
-    public ApiResponse<?> createProduct(
-            @RequestBody @Valid ProductCreateRequest request,
-            //@ModelAttribute("files") List<MultipartFile> files,
-            //@RequestPart("file") MultipartFile file,
-            BindingResult result
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<ProductResponse> createProduct(
+            @RequestBody @Valid ProductCreateRequest request
     ){
-
-        try{
-            if(result.hasErrors()){
-                List<String> errorMessages = result.getFieldErrors()
-                        .stream()
-                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                        .toList();
-                return ApiResponse.builder()
-                        //.success(false)
-                        .message("Gặp lỗi trong quá trình tạo sản phẩm")
-                        .result(errorMessages)
-                        .build();
-            }
-            Product product = productService.createProduct(request);
-
-            return ApiResponse.builder()
-                    //.success(true)
+            return ApiResponse.<ProductResponse>builder()
                     .result(productService.createProduct(request))
                     .build();
-        }catch (Exception ex){
-            return ApiResponse.builder()
-                    //.success(false)
-                    .result(ex.getMessage())
-                    .build();
-        }
     }
     @PostMapping(value = "/uploads/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<?> uploadImages(
             @ModelAttribute("files") List<MultipartFile> files,
             @PathVariable("id") long productId
@@ -133,7 +110,6 @@ public class ProductController {
             }
         }
         return ApiResponse.builder()
-                //.success(true)
                 .result(productImages)
                 .build();
     }
@@ -158,6 +134,7 @@ public class ProductController {
         String contentType = file.getContentType();
         return contentType != null && contentType.startsWith("image/");
     }
+
     @GetMapping("/{id}")
     public ApiResponse<?> getById(@PathVariable long id){
         try{
@@ -173,22 +150,23 @@ public class ProductController {
             products.setUpdateAt(product.getUpdateAt());
             products.setCreateAt(product.getCreateAt());
             return ApiResponse.builder()
-                    //.success(true)
                     .result(products)
                     .build();
         }catch (Exception e){
             return ApiResponse.builder()
-                    //.success(false)
                     .result(e.getMessage())
                     .build();
         }
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable long id){
-        return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfully");
+    public ApiResponse<String> delete(@PathVariable long id){
+        productService.deleteProduct(id);
+        return ApiResponse.<String>builder()
+                .result("Delete successfully")
+                .build();
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/generate")
     public ApiResponse<String> generateProducts(){
         Faker faker = new Faker();
@@ -211,7 +189,6 @@ public class ProductController {
             }
         }
         return ApiResponse.<String>builder()
-                //.success(true)
                 .result("Thành công")
                 .build();
     }

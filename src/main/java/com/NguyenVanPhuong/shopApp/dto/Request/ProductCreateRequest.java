@@ -13,8 +13,8 @@ public class ProductCreateRequest {
     @NotBlank(message = "This is required")
     @Size(min = 1,max = 200, message = "NAME_VALIDATION")
     String name;
-    @Min(value = 0, message = "Price must be greater than or equal to 0")
-    @Max(value = 10000000, message = "Price must be less than or equal to 10000000" )
+    @Min(value = 0, message = "LOWER_PRICE")
+    @Max(value = 10000000, message = "HIGHEST_PRICE" )
     float price;
     String url;
     String description;

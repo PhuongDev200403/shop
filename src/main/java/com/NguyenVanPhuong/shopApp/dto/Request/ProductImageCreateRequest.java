@@ -18,8 +18,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductImageCreateRequest {
     @JsonProperty("product_id")
-    @Min(value = 1, message = "id phải lớn hơn hoặc bàng 1")
-    @NotNull(message = "product id không thể để trống")
+    @Min(value = 1, message = "INVALD_ID")
+    @NotNull(message = "INVALID_ID")
     Long product_id;
     @Size(min = 5, max = 250, message = "file ảnh không hợp lệ")
     @JsonProperty("image_url")

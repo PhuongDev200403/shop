@@ -20,3 +20,7 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+
+jwt:
+  expiration: 2592000  #Tính theo second tương đương 3 ngày
+  private_key: VNIFrB3NTzQ8DPOulDCxtAdYn3X7CeXYUpw7pWYmj1k=

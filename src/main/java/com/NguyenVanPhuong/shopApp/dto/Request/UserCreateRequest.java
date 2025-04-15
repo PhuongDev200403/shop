@@ -22,13 +22,15 @@ public class UserCreateRequest {
     @JsonProperty("fullname")
     String fullName;
     @NotBlank(message = "Phone number is required")
+    @Size(min = 10, max = 10, message = "PHONE_NUMBER_INVALID")
     @JsonProperty("phone_number")
     String phoneNumber;
     String address;
     @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "")
     String password;
     @JsonProperty("date_of_birth")
-    Date dateOfBirth;
+    LocalDate dateOfBirth;
     @JsonProperty("facebook_account_id")
     int faceBookAccountId;
     @JsonProperty("google_account_id")

@@ -14,6 +14,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryCreateRequest {
 //    @Size(min = 1, message = "Name must be at least 1 character")
-    @NotEmpty(message = "Category cannot be null")
+    @NotEmpty(message = "NAME_VALIDATION")
     String name;
 }

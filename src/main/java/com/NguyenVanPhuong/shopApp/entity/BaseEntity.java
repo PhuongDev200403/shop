@@ -1,9 +1,6 @@
 package com.NguyenVanPhuong.shopApp.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -15,7 +12,9 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @MappedSuperclass
 public class BaseEntity {
+    @Column(name = "create_at")
     LocalDateTime createAt;
+    @Column(name = "update_at")
     LocalDateTime updateAt;
 
     @PrePersist

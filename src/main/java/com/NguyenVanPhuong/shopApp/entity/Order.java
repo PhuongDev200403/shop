@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity(name ="orders")
@@ -28,6 +29,7 @@ public class Order {
     String phoneNumber;
     @Column(name = "address")
     String address;
+    @Column(name = "note")
     String note;
     @Column(name = "order_date")
     LocalDateTime orderDate;
@@ -40,7 +42,7 @@ public class Order {
     @Column(name = "shipping_address")
     String shippingAddress;
     @Column(name = "shipping_date")
-    Date shippingDate;
+    LocalDate shippingDate;
     @Column(name = "tracking_number")
     String trackingNumber;
     @Column(name = "payment_method")

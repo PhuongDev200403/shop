@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -24,41 +25,35 @@ public class UserController {
     UserService userService;
 
     @PostMapping("/register")
-    public ApiResponse<?> createUser(
-            @Valid @RequestBody UserCreateRequest request,
-            BindingResult result
-    ){
-        try{
-            if(result.hasErrors()){
-                List<?> errorMessage = result.getFieldErrors()
-                        .stream()
-                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                        .toList();
-                return ApiResponse.builder()
-                        //.success(false)
-                        .message("Tạo người dùng thất bại")
-                        .result(errorMessage)
-                        .build();
-            }
-            return ApiResponse.builder()
-                    //.success(true)
-                    .result(userService.createUser(request))
+    public ApiResponse<?> createUser(@Valid @RequestBody UserCreateRequest request){
+        return ApiResponse.builder()
+                .result(userService.createUser(request))
+                .build();
+    }
+
+    @PostMapping("/login")
+    public ApiResponse<String> login(@Valid @RequestBody UserLoginRequest request, BindingResult result) {
+        if (result.hasErrors()) {
+            String errors = result.getAllErrors()
+                    .stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .collect(Collectors.joining(", "));
+            return ApiResponse.<String>builder()
+                    .message("Validation error: " + errors)
+                    .build();
+        }
+
+        try {
+            String token = userService.login(request);
+            return ApiResponse.<String>builder()
+                    .message("Lấy token thành công")
+                    .result(token)
                     .build();
         } catch (Exception e) {
-            return ApiResponse.builder()
-//                    .success(false)
-                    .result(e.getMessage())
+            return ApiResponse.<String>builder()
+                    .message("Error: " + e.getMessage())
                     .build();
         }
     }
 
-    @PostMapping("/login")
-    public ApiResponse<String> login(@Valid @RequestBody UserLoginRequest request){
-        String token = userService.login(request);
-        return ApiResponse.<String>builder()
-                //.success(true)
-                .message("Lấy token thành công")
-                .result(token)
-                .build();
-    }
 }

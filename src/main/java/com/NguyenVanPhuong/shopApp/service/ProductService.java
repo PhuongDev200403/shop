@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -34,22 +35,15 @@ public class ProductService {
     @Autowired
     ProductMapper productMapper;
     //Tạo sản phẩm mới
-    public Product createProduct(ProductCreateRequest request){
+    public ProductResponse createProduct(ProductCreateRequest request){
         Category category = categoryRepository
                 .findById((long)(request.getCategory_id()))
                 .orElseThrow(() ->
-                        new DataIntegrityViolationException(
-                                "Không tìm thấy danh mục chứa sản phẩm")
-        );
-            Product product = Product.builder()
-                    .name(request.getName())
-                    .price(request.getPrice())
-                    .description(request.getDescription())
-                    .url(request.getUrl())
-                    .category(category)
-                    .build();
-
-        return productReposiory.save(product);
+                        new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
+        Product product = productMapper.toProduct(request);
+        product.setCategory(category);
+        product = productReposiory.save(product);
+        return productMapper.toProductResponse(product);
     }
     //Lấy sản phẩm theo id
     public Product getProductById(long id){

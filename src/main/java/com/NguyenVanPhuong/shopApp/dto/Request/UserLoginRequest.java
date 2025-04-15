@@ -17,5 +17,6 @@ public class UserLoginRequest {
     @JsonProperty("phone_number")
     String phoneNumber;
     @NotBlank(message = "Password is required")
+    @JsonProperty("password")
     String password;
 }
